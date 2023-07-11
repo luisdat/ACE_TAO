@@ -72,7 +72,8 @@ TAO_DynValue_i::init (CORBA::TypeCode_ptr tc)
           (member_type.in (), member_type.in (), this->allow_truncation_);
     }
 
-  this->set_to_null ();
+// DGM, 11-2-2014  this->set_to_null ();
+
 
   // init() is called only from DynAnyFactory create_*
   // methods. These are the only functions that can
@@ -704,7 +705,7 @@ TAO_DynValue_i::to_outputCDR (TAO_OutputCDR &out_cdr)
   if (!CORBA::ValueBase::_tao_write_special_value (
         out_cdr,
         reinterpret_cast <CORBA::ValueBase *>
-          (this->is_null_ ? 0 : this)))
+          (this->is_null_ ? 0 : this)             ))
     {
       // OK since a special_value hasn't been written we are
       // NOT a NULL or indirect ValueType. We need to create
@@ -1201,7 +1202,7 @@ TAO_DynValue_i::from_inputCDR (TAO_InputCDR &strm)
               // base-type's state.
               if (!( (currentBase || !requires_truncation) ?
                      ci.handle_chunking (strm) :
-                     ci.skip_chunks (strm)))
+                     ci.skip_chunks (strm)                  ))
                 {
                   TAOLIB_DEBUG ((LM_DEBUG,
                     ACE_TEXT ("TAO (%P|%t) - %N:%l TAO_DynValue_i::from_inputCDR() ")
