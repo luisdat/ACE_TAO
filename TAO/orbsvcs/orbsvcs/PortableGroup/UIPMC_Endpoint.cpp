@@ -68,7 +68,7 @@ TAO_UIPMC_Endpoint::object_addr (const ACE_INET_Addr &addr)
   addr.get_host_addr (tmp, sizeof tmp);
   this->host_ = CORBA::string_dup (tmp);
   this->object_addr_.set (addr);
-  this->uint_ip_addr (addr.get_ip_address ());
+  //this->uint_ip_addr (addr.get_ip_address ());
 }
 
 const char *

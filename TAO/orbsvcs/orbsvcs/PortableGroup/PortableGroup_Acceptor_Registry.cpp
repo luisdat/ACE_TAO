@@ -73,7 +73,7 @@ TAO_PortableGroup_Acceptor_Registry::open (const TAO_Profile* profile,
     }
 }
 
-#define MAX_ADDR_LENGTH   (32)
+//#define MAX_ADDR_LENGTH   (32)
 
 void
 TAO_PortableGroup_Acceptor_Registry::open_i (const TAO_Profile* profile,
@@ -87,12 +87,13 @@ TAO_PortableGroup_Acceptor_Registry::open_i (const TAO_Profile* profile,
       // Extract the desired endpoint/protocol version if one
       // exists.
       const TAO_GIOP_Message_Version &version = profile->version ();
-      char buffer [MAX_ADDR_LENGTH];
+      // char buffer [MAX_ADDR_LENGTH];
+	  char buffer [INET6_ADDRSTRLEN + 8];
 
       // Removed the constness of profile.  We're not changing
       // anything, but need to call a nonconst function.
       TAO_Profile* nc_profile = const_cast<TAO_Profile *> (profile);
-      nc_profile->endpoint ()->addr_to_string (buffer, MAX_ADDR_LENGTH);
+      nc_profile->endpoint ()->addr_to_string (buffer, INET6_ADDRSTRLEN + 1);
 
       if (acceptor->open (&orb_core,
                           orb_core.lane_resources ().leader_follower ().reactor(),
