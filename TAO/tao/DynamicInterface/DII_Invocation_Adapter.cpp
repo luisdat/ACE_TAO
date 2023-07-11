@@ -97,6 +97,7 @@ namespace TAO
         ACE_Time_Value *&max_wait_time,
         Invocation_Retry_State *)
   {
+
     // Simple sanity check
     if (this->mode_ != TAO_DII_INVOCATION ||
         this->type_ != TAO_TWOWAY_INVOCATION)
@@ -123,6 +124,10 @@ namespace TAO
                                op,
                                this->exception_list_,
                                this->request_);
+
+// DGM
+	synch.myrequest=myrequest;
+// END-DGM
 
     // forward requested byte order
     synch._tao_byte_order (this->_tao_byte_order ());
@@ -220,6 +225,7 @@ namespace TAO
       ACE_Time_Value *&max_wait_time,
       Invocation_Retry_State *)
   {
+
     // Simple sanity check
     if (this->mode_ != TAO_DII_DEFERRED_INVOCATION ||
         this->type_ != TAO_TWOWAY_INVOCATION)

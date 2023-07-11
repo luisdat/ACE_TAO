@@ -45,6 +45,10 @@
 #else
 # include "ace/Atomic_Op.h"
 #endif /* ACE_HAS_CPP11 */
+// DGM
+#include "tao/Exception.h"
+#include "tao/RequestEnv.h"
+// END-DGM
 
 TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -67,9 +71,13 @@ namespace CORBA
    * Provides a way to create requests and populate it with parameters
    * for use in the Dynamic Invocation Interface.
    */
-  class TAO_DynamicInterface_Export Request
+// DGM
+  class TAO_DynamicInterface_Export Request:public RequestEnv
+// END-DGM
   {
+	CORBA::Exception *last_user_exception;	// DGM
   public:
+
     /// Return the target of this request.
     CORBA::Object_ptr target (void) const;
 
@@ -192,6 +200,13 @@ namespace CORBA
     /// received.
     CORBA::Boolean response_received (void);
 
+// DGM
+// Last user exception management
+
+	void environment(CORBA::Exception &ex);
+
+	CORBA::Exception* environment();
+// END-DGM
     // Useful for template programming.
     typedef CORBA::Request_ptr _ptr_type;
     typedef CORBA::Request_var _var_type;
@@ -217,6 +232,7 @@ namespace CORBA
     ~Request (void);
 
   private:
+
     /// Target object.
     CORBA::Object_ptr target_;
 

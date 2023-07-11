@@ -12,6 +12,12 @@
 # include "tao/PortableInterceptorC.h"
 #endif /*TAO_HAS_INTERCEPTORS */
 
+#include "AnyTypeCode/TypeCode.h"
+
+// DGM
+#include "RequestEnv.h"
+// END-DGM
+
 TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 
 namespace TAO
@@ -143,7 +149,12 @@ namespace TAO
               }
             else
              {
-               throw;
+// DGM
+	if (myrequest != NULL)
+		myrequest->environment(ex);		
+	else
+	    	throw;	// Static invocations can throw user exceptions
+// END-DGM
              }
           }
       }

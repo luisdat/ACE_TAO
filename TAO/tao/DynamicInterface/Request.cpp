@@ -43,6 +43,7 @@ CORBA::Request::_decr_refcount (void)
 }
 
 // DII Request class implementation
+
 CORBA::Request::Request (CORBA::Object_ptr obj,
                          CORBA::ORB_ptr orb,
                          const CORBA::Char *op,
@@ -73,6 +74,10 @@ CORBA::Request::Request (CORBA::Object_ptr obj,
 
       this->exceptions_ = tmp;
     }
+
+// DGM
+   last_user_exception=NULL;
+// END-DGM
 }
 
 CORBA::Request::Request (CORBA::Object_ptr obj,
@@ -101,6 +106,10 @@ CORBA::Request::Request (CORBA::Object_ptr obj,
 
   ACE_NEW (this->result_,
            CORBA::NamedValue);
+
+// DGM
+  last_user_exception=NULL;
+// END-DGM
 }
 
 CORBA::Request::~Request (void)
@@ -112,6 +121,11 @@ CORBA::Request::~Request (void)
   this->opname_ = 0;
   ::CORBA::release (this->args_);
   ::CORBA::release (this->result_);
+
+// DGM
+  if (last_user_exception != NULL)
+	delete last_user_exception;
+// END-DGM
 }
 
 // The public DII interfaces:  normal and oneway calls.
@@ -142,6 +156,10 @@ CORBA::Request::invoke (void)
        static_cast<CORBA::ULong> (ACE_OS::strlen (this->opname_)),
        this->exceptions_.in (),
        this);
+
+// DGM
+  _tao_call.myrequest=this;
+// END-DGM
 
   // forward requested byte order
   _tao_call._tao_byte_order (this->_tao_byte_order ());
@@ -179,6 +197,10 @@ CORBA::Request::send_oneway (void)
       this->opname_,
       static_cast<CORBA::ULong> (ACE_OS::strlen (this->opname_)),
       TAO::TAO_SYNCHRONOUS_INVOCATION);
+
+// DGM
+  _tao_call.myrequest=this;
+// END-DGM
 
   // forward requested byte order
   _tao_call._tao_byte_order (this->_tao_byte_order ());
@@ -252,6 +274,10 @@ CORBA::Request::sendc (CORBA::Object_ptr handler)
        const_cast<char *> (this->opname_),
        static_cast<CORBA::ULong> (ACE_OS::strlen (this->opname_)),
        0); // collocation proxy broker
+
+// DGM
+  _tao_call.myrequest=this;
+// END-DGM
 
   // forward requested byte order
   _tao_call._tao_byte_order (this->_tao_byte_order ());
@@ -383,5 +409,22 @@ CORBA::Request::handle_response (TAO_InputCDR &incoming,
                   ACE_TEXT ("TAO (%P|%t) - Request::handle_response, unhandled reply status\n")));
   }
 }
+
+
+
+// DGM
+void CORBA::Request::environment(CORBA::Exception &ex) {
+	last_user_exception=ex._tao_duplicate();
+}
+
+
+CORBA::Exception *CORBA::Request::environment() {
+	if (last_user_exception != NULL)
+		return last_user_exception->_tao_duplicate();
+	else
+		return NULL;
+}
+
+// END-DGM
 
 TAO_END_VERSIONED_NAMESPACE_DECL

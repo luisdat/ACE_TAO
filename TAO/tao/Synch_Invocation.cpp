@@ -28,6 +28,10 @@
 # include "tao/Synch_Invocation.inl"
 #endif /* __ACE_INLINE__ */
 
+// DGM
+#include "RequestEnv.h"
+// END-DGM
+
 TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 
 namespace
@@ -276,7 +280,16 @@ namespace TAO
           s = TAO_INVOKE_RESTART;
         else if (status == PortableInterceptor::SYSTEM_EXCEPTION
                  || status == PortableInterceptor::USER_EXCEPTION)
+	// DGM
+	if (status == PortableInterceptor::SYSTEM_EXCEPTION) {
+		if (myrequest!=NULL)
+			myrequest->environment(ex);		
+		else
+		throw;	// Static invocations can throw user exceptions
+	}
+	else
           throw;
+	// END-DGM
       }
     catch (...)
       {

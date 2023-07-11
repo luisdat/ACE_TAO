@@ -29,6 +29,8 @@
 #include "tao/ServerRequestInterceptor_Adapter.h"
 #endif  /* TAO_HAS_INTERCEPTORS == 1 */
 
+#include "RequestEnv.h"
+
 TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 
 class TAO_Service_Context;
@@ -57,6 +59,11 @@ namespace TAO
   class TAO_Export Invocation_Base
   {
   public:
+// DGM
+	// We can associate a dynamic request
+	RequestEnv *myrequest;
+// END-DGM
+
     virtual ~Invocation_Base (void);
 
     /// Accessor and mutator methods

@@ -177,6 +177,10 @@ namespace TAO
                                     details,
                                     this->type_ == TAO_TWOWAY_INVOCATION);
 
+// DGM	
+	coll_inv.myrequest=myrequest;
+// END-DGM
+
     status = coll_inv.invoke (strat);
 
     if (status == TAO_INVOKE_RESTART &&
@@ -304,6 +308,10 @@ namespace TAO
     TAO::Synch_Twoway_Invocation synch (this->target_,  r, details,
                                         true);
 
+// DGM
+	synch.myrequest=myrequest;
+// END-DGM
+
     // forward requested byte order
     synch._tao_byte_order (this->byte_order_);
 
@@ -335,6 +343,10 @@ namespace TAO
                                      ACE_Time_Value *&max_wait_time)
   {
     TAO::Synch_Oneway_Invocation synch (this->target_, r, details);
+
+// DGM
+	synch.myrequest=myrequest;
+// END-DGM
 
     // forward requested byte order
     synch._tao_byte_order (this->byte_order_);

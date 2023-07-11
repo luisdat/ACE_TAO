@@ -48,6 +48,9 @@ namespace TAO
     , is_remote_request_ (request_is_remote)
 #endif /* TAO_HAS_INTERCEPTORS == 1 */
   {
+// DGM
+	myrequest=NULL;
+// END-DGM
   }
 
   Invocation_Base::~Invocation_Base (void)

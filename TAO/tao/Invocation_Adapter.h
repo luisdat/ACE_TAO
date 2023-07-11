@@ -24,6 +24,10 @@
 #include "tao/CORBA_methods.h"
 #include "tao/Pseudo_VarOut_T.h"
 
+// DGM
+#include "RequestEnv.h"
+// END-DGM
+
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 class ACE_Time_Value;
 ACE_END_VERSIONED_NAMESPACE_DECL
@@ -73,6 +77,11 @@ namespace TAO
   class TAO_Export Invocation_Adapter
   {
   public:
+// DGM
+	// We can associate a dynamic request
+	RequestEnv *myrequest;
+// END-DGM
+
     /// The only constructor used by the IDL compiler, and only way to
     /// create this adapter.
     /**
@@ -140,6 +149,7 @@ namespace TAO
     int _tao_byte_order ();
 
   protected:
+
     /**
      * The stub pointer passed to this call has all the details about
      * the object to which the invocation needs to be routed to. The

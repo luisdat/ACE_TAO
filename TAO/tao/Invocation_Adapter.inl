@@ -25,6 +25,9 @@ namespace TAO
     , mode_ (mode)
     , byte_order_ (TAO_ENCAP_BYTE_ORDER)
   {
+// DGM
+  myrequest=NULL;
+// END-DGM
   }
 
   ACE_INLINE
