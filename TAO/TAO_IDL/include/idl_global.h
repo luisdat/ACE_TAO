@@ -495,6 +495,13 @@ public:
   bool case_diff_error (void);
   // are we strict about case-only differences or not?
 
+  //ablancom
+  void case_diff_silent (bool);
+  // ignore identifiers (1) that differ only by case
+
+  bool case_diff_silent (void);
+
+  //END_ablancom
   void nest_orb (bool);
   // Set on or off whether we are using the NEST ORB.
 
@@ -948,6 +955,11 @@ private:
   bool case_diff_error_;
   // Do we report an error for indentifiers in the same scope that differ
   // only by case? or just a warning?
+
+  // ablancom
+  bool case_diff_silent_;
+  // Are we ignoring identifiers that differ only by case?
+  //END_ablancom
 
   bool nest_orb_;
   // Is this front end being used for the NEST ORB?

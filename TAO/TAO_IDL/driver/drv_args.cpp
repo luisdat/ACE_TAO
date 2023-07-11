@@ -133,6 +133,8 @@ DRV_usage (void)
     ACE_TEXT ("only in case (default is error)\n")
     ACE_TEXT (" -Ce\t\t\tError if identifier spellings differ ")
     ACE_TEXT ("only in case (default)\n")
+    ACE_TEXT (" -Cs\t\t\tSilences if identifier spellings differ ")
+    ACE_TEXT ("only in case (default is error)\n")
     ACE_TEXT (" -ae\t\t\tError if anonymous type is seen ")
     ACE_TEXT ("(default)\n")
     ACE_TEXT (" -aw\t\t\tWarning if anonymous type is seen ")
@@ -451,6 +453,14 @@ DRV_parse_args (long ac, char **av)
                   // ...report a warning (default for now)
                   idl_global->case_diff_error (false);
                 }
+              //ablancom
+              else if (av[i][2] == 's')
+                {
+                  // ...silent
+                  idl_global->case_diff_error (false);
+		              idl_global->case_diff_silent (true);
+                }
+              //ablancom
               else
                 {
                   UNKNOWN_OPTION;

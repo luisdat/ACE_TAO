@@ -152,6 +152,7 @@ IDL_GlobalData::IDL_GlobalData (void)
     temp_dir_ (0),
     ident_string_ (0),
     case_diff_error_ (true),
+    case_diff_silent_ (false),
     nest_orb_ (false),
     idl_flags_ (""),
     preserve_cpp_keywords_ (true),
@@ -865,6 +866,22 @@ IDL_GlobalData::case_diff_error (void)
 {
   return this->case_diff_error_;
 }
+
+// ablancom
+void
+IDL_GlobalData::case_diff_silent (bool val)
+{
+  this->case_diff_silent_ = val;
+}
+
+bool
+IDL_GlobalData::case_diff_silent (void)
+{
+   return this->case_diff_silent_;
+}
+
+// END-ablancom
+
 
 void
 IDL_GlobalData::nest_orb (bool val)

@@ -1266,6 +1266,11 @@ void
 UTL_Error::name_case_warning (char *b,
                               char *n)
 {
+  // ablancom
+  if (idl_global->case_diff_silent ())
+    return;
+  // END-ablancom
+
   if (idl_global->print_warnings ())
     {
       idl_warning_header (EIDL_NAME_CASE_WARNING);
@@ -1288,6 +1293,10 @@ UTL_Error::idl_keyword_error (char *n)
 void
 UTL_Error::idl_keyword_warning (char *n)
 {
+  // ablancom
+  if (idl_global->case_diff_silent ())
+    return;
+  // END-ablancom
   if (idl_global->print_warnings ())
     {
       idl_warning_header (EIDL_KEYWORD_WARNING);
