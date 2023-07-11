@@ -774,7 +774,30 @@ ACE_SOCK_Dgram::make_multicast_ifaddr6 (ipv6_mreq *ret_mreq,
                   0,
                   sizeof (lmreq));
 
-#if defined (ACE_WIN32) || !defined (ACE_LACKS_IF_NAMETOINDEX)
+#if defined (ACE_LINUX)
+  if (net_if != 0)
+      {
+   // DGM
+       // if net_if has the format "if=ethX"...... We have to remove "if="
+       // lmreq.ipv6mr_interface = ACE_OS::if_nametoindex (ACE_TEXT_ALWAYS_CHAR(net_if+3));
+       if(ACE_OS::strstr (net_if, "if=") == 0)
+       {
+         lmreq.ipv6mr_interface =
+           ACE_OS::if_nametoindex (ACE_TEXT_ALWAYS_CHAR(net_if));
+       }
+       else
+       {
+         lmreq.ipv6mr_interface =
+           ACE_OS::if_nametoindex (ACE_TEXT_ALWAYS_CHAR(net_if+3));
+       }
+      if (lmreq.ipv6mr_interface == 0)
+        {
+          errno = EINVAL;
+          return -1;
+        }
+    }
+
+#elif defined (ACE_WIN32) || !defined (ACE_LACKS_IF_NAMETOINDEX)
   if (net_if != 0)
     {
 #if defined (ACE_WIN32)
