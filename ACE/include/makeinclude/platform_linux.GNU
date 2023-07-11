@@ -10,6 +10,8 @@ else
   CXX_FOR_VERSION_TEST ?= g++
 endif
 
+FLAGS_C_CC += -std=c++98
+
 CXX_FULL_VERSION := $(shell $(CXX_FOR_VERSION_TEST) --version)
 CXX_VERSION := $(shell $(CXX_FOR_VERSION_TEST) -dumpversion)
 
