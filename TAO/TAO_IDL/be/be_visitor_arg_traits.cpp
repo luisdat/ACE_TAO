@@ -693,6 +693,7 @@ be_visitor_arg_traits::visit_sequence (be_sequence *node)
 int
 be_visitor_arg_traits::visit_string (be_string *node)
 {
+  /* DGM
   if (node->imported ())
     {
       // Arg traits will presumably already be generated, but
@@ -702,7 +703,7 @@ be_visitor_arg_traits::visit_string (be_string *node)
       this->generated (node, true);
       return 0;
     }
-
+  */
   if (this->generated (node) && !this->ctx_->alias())
     {
       return 0;

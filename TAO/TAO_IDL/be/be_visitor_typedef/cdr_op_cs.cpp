@@ -29,7 +29,10 @@ be_visitor_typedef_cdr_op_cs::~be_visitor_typedef_cdr_op_cs (void)
 int
 be_visitor_typedef_cdr_op_cs::visit_typedef (be_typedef *node)
 {
-  if (node->cli_stub_cdr_op_gen () || node->imported ())
+ // DGM if (node->cli_stub_cdr_op_gen () || node->imported ())
+// DGM
+ if (node->cli_stub_cdr_op_gen ())
+// END-DGM
     {
       return 0;
     }
@@ -139,9 +142,15 @@ be_visitor_typedef_cdr_op_cs::visit_array (be_array *node)
       bt = node;
     }
 
+/* DGM
   if (!bt->imported () &&
       bt->node_type () == AST_Decl::NT_array) // direct typedef of a base node
                                               // type
+*/
+// DGM
+  if (bt->node_type () == AST_Decl::NT_array) // direct typedef of a base node
+                                              // type
+// END-DGM
     {
       // let the base class visitor handle this case
       if (this->be_visitor_typedef::visit_array (node) == -1)
