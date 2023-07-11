@@ -12,6 +12,13 @@
 
 TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 
+// DGM
+TAO_Acceptor_port::TAO_Acceptor_port (CORBA::ULong tag):TAO_Acceptor(tag)
+{
+}
+// END-DGM
+
+
 TAO_PortableGroup_Acceptor_Registry::TAO_PortableGroup_Acceptor_Registry (void)
 {
 }
@@ -31,16 +38,23 @@ TAO_PortableGroup_Acceptor_Registry::~TAO_PortableGroup_Acceptor_Registry (void)
 }
 
 
-void
+// DGM void
+unsigned
 TAO_PortableGroup_Acceptor_Registry::open (const TAO_Profile* profile,
-                                           TAO_ORB_Core &orb_core)
+                                           TAO_ORB_Core &orb_core,callback_f f)
 {
+// DGM
+  unsigned port=0;
+
   Entry *entry;
 
   if (this->find (profile, entry) == 1)
     {
       // Found it.  Increment the reference count.
       ++entry->cnt;
+
+	// DGM
+      port=entry->port_number;
     }
   else
     {
@@ -61,46 +75,60 @@ TAO_PortableGroup_Acceptor_Registry::open (const TAO_Profile* profile,
         {
           if ((*factory)->factory ()->tag () == profile->tag ())
             {
-              this->open_i (profile,
+// DGM              this->open_i (profile,
+		port=this->open_i (profile,
                             orb_core,
-                            factory);
-
+                            factory,f);
+// END-DGM
               // found = 1;  // A usable protocol was found.
             }
           else
             continue;
         }
     }
+
+return port;	// DGM
 }
 
 //#define MAX_ADDR_LENGTH   (32)
 
-void
+// DGM void
+unsigned
 TAO_PortableGroup_Acceptor_Registry::open_i (const TAO_Profile* profile,
                                              TAO_ORB_Core &orb_core,
-                                             TAO_ProtocolFactorySetItor &factory)
+                                             TAO_ProtocolFactorySetItor &factory,callback_f f)
 {
-  TAO_Acceptor *acceptor = (*factory)->factory ()->make_acceptor ();
+// DGM
+  unsigned port;
+
+// DGM  TAO_Acceptor *acceptor = (*factory)->factory ()->make_acceptor ();
+  TAO_Acceptor_port *acceptor = (TAO_Acceptor_port *) (*factory)->factory ()->make_acceptor ();
+// END-DGM
 
   if (acceptor != 0)
     {
       // Extract the desired endpoint/protocol version if one
       // exists.
       const TAO_GIOP_Message_Version &version = profile->version ();
-      // char buffer [MAX_ADDR_LENGTH];
-	  char buffer [INET6_ADDRSTRLEN + 8];
+      // DGM
+      //char buffer [INET6_ADDRSTRLEN + 1];
+	char buffer [INET6_ADDRSTRLEN + 8];
 
       // Removed the constness of profile.  We're not changing
       // anything, but need to call a nonconst function.
       TAO_Profile* nc_profile = const_cast<TAO_Profile *> (profile);
       nc_profile->endpoint ()->addr_to_string (buffer, INET6_ADDRSTRLEN + 1);
 
-      if (acceptor->open (&orb_core,
+// DGM      if (acceptor->open (&orb_core,
+      if (acceptor->open_port (&orb_core,
+// END-DGM
                           orb_core.lane_resources ().leader_follower ().reactor(),
                           version.major,
                           version.minor,
                           buffer,
-                          0) == -1)
+// DGM                          0) == -1)
+			  0,&port,f) == -1)
+// END-DGM
         {
           delete acceptor;
 
@@ -112,11 +140,13 @@ TAO_PortableGroup_Acceptor_Registry::open_i (const TAO_Profile* profile,
                         buffer,
                         ""));
 
-          throw CORBA::BAD_PARAM (
+      /* DGM    throw CORBA::BAD_PARAM (
             CORBA::SystemException::_tao_minor_code (
               TAO_ACCEPTOR_REGISTRY_OPEN_LOCATION_CODE,
               EINVAL),
             CORBA::COMPLETED_NO);
+	*/
+	return 0;	// DGM
         }
 
       // Add acceptor to list.
@@ -124,6 +154,9 @@ TAO_PortableGroup_Acceptor_Registry::open_i (const TAO_Profile* profile,
       tmp_entry.acceptor = acceptor;
       tmp_entry.endpoint = nc_profile->endpoint ()->duplicate ();
       tmp_entry.cnt = 1;
+
+// DGM
+      tmp_entry.port_number=port;
 
       if (this->registry_.enqueue_tail (tmp_entry) == -1)
         {
@@ -158,6 +191,9 @@ TAO_PortableGroup_Acceptor_Registry::open_i (const TAO_Profile* profile,
           EINVAL),
         CORBA::COMPLETED_NO);
     }
+
+  // DGM
+  return port;
 }
 
 int

@@ -94,6 +94,14 @@ public:
   /// Get the server-side eager complete message dequeuing enable flag.
   bool enable_eager_dequeue (void) const;
 
+// DGM
+  // Get the maximum size of the miop queue (when active)
+  u_long max_miop_queue_size (void) const;
+
+  // Get the max miop queue size enable flag
+  bool is_max_miop_queue_size_enabled (void) const;
+// END-DGM
+
 private:
   enum Fragments_Cleanup_Strategy_Type
     {
@@ -131,6 +139,16 @@ private:
 
   /// Get the server-side eager complete message dequeuing enable flag.
   bool enable_eager_dequeue_;
+
+// DGM
+  // Number maximum of elements to be queued when eager dequeue is active
+  // This parameter is used only when -ORBMaxMIOPQueueSize is specified in miop factory
+  u_long max_miop_queue_size_;
+
+  // When true, we use max_miop_queue_size_
+  // Default value: false
+  bool enable_max_miop_queue_size_;
+// END-DGM
 };
 
 TAO_END_VERSIONED_NAMESPACE_DECL

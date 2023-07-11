@@ -26,6 +26,10 @@
 #include "ace/Reactor.h"
 #include "ace/SOCK_Dgram_Mcast.h"
 
+// DGM
+#include "tao/Object.h"
+
+
 TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 
 // This connection handler.
@@ -80,7 +84,9 @@ public:
   virtual int handle_close (ACE_HANDLE, ACE_Reactor_Mask);
   virtual int handle_timeout (const ACE_Time_Value &current_time,
                               const void *act = 0);
-  virtual int open (void *);
+// DGM  virtual int open (void *);
+// WARNING: We have modified VIRTUAL METHOD
+  virtual int open (void *,unsigned *port_number=NULL,int reuse_allowed=1);
   //@}
 
   /// Add ourselves to Cache.
@@ -123,6 +129,14 @@ protected:
   virtual int release_os_resources (void);
   virtual int handle_write_ready (const ACE_Time_Value *timeout);
   //@}
+
+// DGM
+	// Callback function to be invoked when MIOP packages are discarded
+	callback_f f;
+
+public:
+	void set_callback_miop_discarded_packages(callback_f f);
+	callback_f get_callback_miop_discarded_packages();
 };
 
 TAO_END_VERSIONED_NAMESPACE_DECL

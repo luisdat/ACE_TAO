@@ -65,6 +65,20 @@ private:
 
   /// Any specified and valid -ORBListenerInterfaces option string
   ACE_CString listener_interfaces_;
+
+  // DGM
+  // If initial_port_==0, then we don't use these options
+  int initial_port_;
+  // If end_port_==0 or not specified, then we use the range [initial_port_,initial_port_]
+  int end_port_;
+
+  // This option is used to allow or avoid reuse ports when unicast is used
+  // If reuse_allowed==1 then ports can be reused
+  // If reuse_allowed==0 then ports cannot be reused (don't use with MULTICAST)
+  // Reuse is allowed by default
+  int reuse_allowed_;
+
+  // END-DGM
 };
 
 TAO_END_VERSIONED_NAMESPACE_DECL

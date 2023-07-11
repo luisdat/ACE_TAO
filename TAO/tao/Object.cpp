@@ -46,6 +46,9 @@ CORBA::Object::Object (TAO_Stub * protocol_proxy,
     , ior_ (0)
     , orb_core_ (orb_core)
     , protocol_proxy_ (protocol_proxy)
+// DGM
+    , callback(NULL)
+// END-DGM
 {
   /// This constructor should not be called when the protocol proxy is
   /// null ie. when the object is a LocalObject. Assert that
@@ -342,12 +345,13 @@ CORBA::Object::_proxy_broker (TAO::Object_Proxy_Broker *proxy_broker)
 CORBA::Boolean
 CORBA::Object::is_nil_i (CORBA::Object_ptr obj)
 {
-  // If the profile length is zero for a non-evaluated IOR it is a
+
+  // If the profile length is zero for a non-evaluted IOR it is a
   // null-object.
   if ((!obj->is_evaluated ()) && obj->ior ().profiles.length () == 0)
     return true;
 
-  // To accommodate new definitions.
+  // To accomodate new definitions.
   if (obj->orb_core_)
     {
       return obj->orb_core_->object_is_nil (obj);
@@ -355,6 +359,8 @@ CORBA::Object::is_nil_i (CORBA::Object_ptr obj)
 
   return false;
 }
+
+
 
 #if (TAO_HAS_MINIMUM_CORBA == 0)
 
@@ -689,7 +695,8 @@ CORBA::Object::proxy_broker (void) const
 {
   // Paranoid check. We *should* never access the proxy_broker
   // when the object has not been initialised so there *should*
-  // always be a stub, but just in case...
+  // alway be a stub, but just in case...
+
   if (this->protocol_proxy_)
     {
       return this->protocol_proxy_->object_proxy_broker ();
@@ -868,6 +875,7 @@ operator>> (TAO_InputCDR& cdr, CORBA::Object*& x)
     {
       // If the user has set up a eager strategy..
       CORBA::String_var type_hint;
+
       if (!(cdr >> type_hint.inout ()))
         return false;
 
@@ -899,6 +907,7 @@ operator>> (TAO_InputCDR& cdr, CORBA::Object*& x)
 
       // Ownership of type_hint is given to TAO_Stub
       // TAO_Stub will make a copy of mp!
+
       TAO_Stub *objdata = 0;
 
       try
@@ -1003,6 +1012,7 @@ operator<< (std::ostream &strm, CORBA::Object_ptr _tao_objref)
 // Traits specializations for CORBA::Object.
 namespace TAO
 {
+
   void In_Object_Argument_Cloner_T<CORBA::InterfaceDef_ptr>::duplicate
                                               (CORBA::InterfaceDef_ptr)
   {
@@ -1039,6 +1049,29 @@ namespace TAO
   }
 } // close TAO namespace
 
+
 TAO::Object_Proxy_Broker * (*_TAO_Object_Proxy_Broker_Factory_function_pointer) (void) = 0;
+
+
+// DGM
+
+void
+CORBA::Object::set_port_number(unsigned port_number) {
+  m_port_number=port_number;
+}
+
+unsigned
+CORBA::Object::get_port_number() {
+  return m_port_number;
+}
+
+void CORBA::Object::set_callback_miop_discarded_packages(callback_f f) {
+	this->callback=f;
+}
+
+callback_f CORBA::Object::get_callback_miop_discarded_packages(void) {
+	return callback;
+}
+// END-DGM
 
 TAO_END_VERSIONED_NAMESPACE_DECL

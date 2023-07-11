@@ -102,11 +102,17 @@ TAO_UIPMC_Mcast_Connection_Handler::open_handler (void *v)
 }
 
 int
-TAO_UIPMC_Mcast_Connection_Handler::open (void *)
+// DGM TAO_UIPMC_Mcast_Connection_Handler::open (void *)
+TAO_UIPMC_Mcast_Connection_Handler::open (void *,unsigned *port_number,int reuse_allowed)
 {
   // Stingify the target multicast group IP address
   char target_multicast_group[INET6_ADDRSTRLEN];
   this->local_addr_.get_host_addr (target_multicast_group, sizeof target_multicast_group);
+
+// DGM
+  if (this->local_addr_.is_multicast())
+	reuse_allowed=1; // Reused is always ON when multicast is used
+// END-DGM
 
   // Check if we are supposed to be listening on specified interface(s)
   size_t preferred_size= 0u;
@@ -132,7 +138,8 @@ TAO_UIPMC_Mcast_Connection_Handler::open (void *)
       for (size_t i= 0u; i < preferred_size; ++i)
         if (0 == this->peer ().join (
                    this->local_addr_,
-                   1,
+// DGM                   1,
+			 reuse_allowed,
                    ACE_TEXT_CHAR_TO_TCHAR (preferred[i].c_str ())))
           {
 #ifndef TAO_ALLOW_UNICAST_MIOP
@@ -169,7 +176,8 @@ TAO_UIPMC_Mcast_Connection_Handler::open (void *)
       if (this->listen_on_all_)
         this->peer ().opts(ACE_SOCK_Dgram_Mcast::OPT_NULLIFACE_ALL | this->peer ().opts());
 
-      if (0 == this->peer ().join (this->local_addr_))
+// DGM      if (0 == this->peer ().join (this->local_addr_))
+      if (0 == this->peer ().join (this->local_addr_,reuse_allowed,0,port_number))
         {
           if (TAO_debug_level > 5)
             ORBSVCS_DEBUG ((LM_DEBUG,
@@ -359,5 +367,20 @@ TAO_UIPMC_Mcast_Connection_Handler::listener_interfaces (const char *value)
 {
   this->listener_interfaces_ = value;
 }
+
+
+// DGM
+void
+TAO_UIPMC_Mcast_Connection_Handler::set_callback_miop_discarded_packages(callback_f f) {
+	this->f=f;
+}
+
+
+callback_f
+TAO_UIPMC_Mcast_Connection_Handler::get_callback_miop_discarded_packages() {
+	return f;
+}
+
+// END-DGM
 
 TAO_END_VERSIONED_NAMESPACE_DECL

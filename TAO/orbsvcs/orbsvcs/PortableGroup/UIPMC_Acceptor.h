@@ -28,6 +28,9 @@
 
 #include "orbsvcs/PortableGroup/portablegroup_export.h"
 
+// DGM
+#include "orbsvcs/PortableGroup/PortableGroup_Acceptor_Registry.h"
+
 TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 
 // Note [] as sizeof used to infer length
@@ -42,12 +45,14 @@ static const char CopyPreferredInterfaceToken[]= "$$$$";
  *
  * The UIPMC-specific bridge class for the concrete acceptor.
  */
-class TAO_PortableGroup_Export TAO_UIPMC_Acceptor : public TAO_Acceptor
+// DGM class TAO_PortableGroup_Export TAO_UIPMC_Acceptor : public TAO_Acceptor
+class TAO_PortableGroup_Export TAO_UIPMC_Acceptor : public TAO_Acceptor_port
 {
 public:
   /// Constructor.
   TAO_UIPMC_Acceptor (bool listen_on_all_ifs,
-                      const char *listener_interfaces);
+// DGM                      const char *listener_interfaces);
+                      const char *listener_interfaces,int initial_port,int end_port,int reuse_allowed);
 
   /// Destructor.
   ~TAO_UIPMC_Acceptor (void);
@@ -69,6 +74,18 @@ public:
                     int version_minor,
                     const char *address,
                     const char *options = 0);
+
+// DGM
+  int open_port (TAO_ORB_Core *orb_core,
+                    ACE_Reactor *reactor,
+                    int version_major,
+                    int version_minor,
+                    const char *address,
+                    const char *options,
+		    unsigned *port,
+		    callback_f f);
+// END-DGM
+
   virtual int open_default (TAO_ORB_Core *orb_core,
                             ACE_Reactor *reactor,
                             int version_major,
@@ -111,7 +128,12 @@ protected:
    * instead.
    */
   virtual int open_i (const ACE_INET_Addr &addr,
-                      ACE_Reactor *reactor);
+// DGM                      ACE_Reactor *reactor);
+			    ACE_Reactor *reactor,
+			    unsigned *port_number=NULL,
+			    int reuse_allowed=1,
+			    callback_f f=NULL);
+// END-DGM
 
   /// Parse protocol specific options.
   virtual int parse_options (const char *options);
@@ -146,6 +168,19 @@ protected:
 private:
   bool listen_on_all_;
   ACE_CString listener_interfaces_;
+
+// DGM
+  // If initial_port_==0, then we don't use these options
+  int initial_port_;
+  // If end_port_==0 or not specified, then we use the range [initial_port_,initial_port_]
+  int end_port_;
+
+  // This option is used to allow or avoid reuse ports when unicast is used
+  // If reuse_allowed==1 then ports can be reused
+  // If reuse_allowed==0 then ports cannot be reused (don't use with MULTICAST)
+  // Reuse is allowed by default
+  int reuse_allowed_;
+// END-DGM
 };
 
 TAO_END_VERSIONED_NAMESPACE_DECL

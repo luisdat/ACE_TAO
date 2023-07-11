@@ -18,6 +18,10 @@ TAO_UIPMC_Protocol_Factory::TAO_UIPMC_Protocol_Factory (void)
      // minor_ (TAO_DEF_GIOP_MINOR),
      listen_on_all_ (false),
      listener_interfaces_ ()
+// DGM
+     ,initial_port_(1024),
+     end_port_(65535),
+     reuse_allowed_(1)
 {
 }
 
@@ -51,7 +55,9 @@ TAO_UIPMC_Protocol_Factory::make_acceptor (void)
   ACE_NEW_RETURN (acceptor,
                   TAO_UIPMC_Acceptor (
                     this->listen_on_all_,
-                    this->listener_interfaces_.c_str ()),
+// DGM                   this->listener_interfaces_.c_str ()),
+                    this->listener_interfaces_.c_str (),this->initial_port_,this->end_port_,this->reuse_allowed_),
+
                   0);
 
   return acceptor;
@@ -113,6 +119,26 @@ TAO_UIPMC_Protocol_Factory::init (int argc,
 
           arg_shifter.consume_arg ();
         }
+// DGM
+  else if (0 != (current_arg = arg_shifter.get_the_parameter
+                (ACE_TEXT("-ORBInitialPort"))))
+        {
+	  this->initial_port_ = ACE_OS::atoi(current_arg);
+          arg_shifter.consume_arg ();
+        }
+  else if (0 != (current_arg = arg_shifter.get_the_parameter
+                (ACE_TEXT("-ORBEndPort"))))
+        {
+	  this->end_port_ = ACE_OS::atoi(current_arg);
+          arg_shifter.consume_arg ();
+        }
+  else if (0 != (current_arg = arg_shifter.get_the_parameter
+                (ACE_TEXT("-ORBReuseAllowed"))))
+        {
+	  this->reuse_allowed_ = ACE_OS::atoi(current_arg);
+          arg_shifter.consume_arg ();
+        }
+// END-DGM
       else
         {
           ORBSVCS_DEBUG ((LM_DEBUG,

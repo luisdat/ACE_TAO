@@ -16,6 +16,10 @@ TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 PortableServer::ObjectId *
 TAO_GOA::create_id_for_reference (CORBA::Object_ptr the_ref)
 {
+// DGM
+	// We recover (if any) the callback function
+  callback=the_ref->get_callback_miop_discarded_packages();
+
   // Get the RepositoryId from the Group reference so
   // we know what kind of reference to make.
   const char* repository_id = the_ref->_stubobj ()->type_id.in ();
@@ -457,8 +461,16 @@ TAO_GOA::create_group_acceptors (CORBA::Object_ptr the_ref,
     {
       if (profile->supports_multicast ())
         {
-          acceptor_registry.open (profile,
-                                  orb_core);
+/* DGM          acceptor_registry.open (profile,
+                                  orb_core); */
+
+// We get the assigned port from the acceptor
+          unsigned port;
+	  port=acceptor_registry.open (profile,
+                                  orb_core,callback);
+	  the_ref->set_port_number(port);
+// END-DGM
+
           ++num;
         }
 

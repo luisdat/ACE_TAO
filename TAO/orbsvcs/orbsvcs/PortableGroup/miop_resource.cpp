@@ -21,6 +21,10 @@ TAO_MIOP_Resource_Factory::TAO_MIOP_Resource_Factory (void)
   , receive_buffer_size_ (0u) // Zero is unspecified (-ORBRcvSock).
   , enable_throttling_    (!!(TAO_DEFAULT_MIOP_SEND_THROTTLING))  // Client-side SendRate throttling enabled.
   , enable_eager_dequeue_ (!!(TAO_DEFAULT_MIOP_EAGER_DEQUEUEING)) // Server-side Multiple message dequeueing.
+// DGM
+  , max_miop_queue_size_ (0u)
+  , enable_max_miop_queue_size_ (false)
+// END-DGM
 {
 }
 
@@ -72,6 +76,21 @@ TAO_MIOP_Resource_Factory::init (int argc, ACE_TCHAR *argv[])
                         ACE_TEXT ("TAO (%P|%t) - MIOP_Resource_Factory ")
                         ACE_TEXT ("-ORBFragmentsCleanupStrategy missing type.\n")));
         }
+// DGM
+      else if (ACE_OS::strcasecmp (argv[curarg],
+                                   ACE_TEXT ("-ORBMaxMIOPQueueSize")) == 0)
+        {
+          if (++curarg < argc) {
+	    this->max_miop_queue_size_=ACE_OS::atoi (argv[curarg]);
+	    this->enable_max_miop_queue_size_=true;
+	  }
+          else
+            ORBSVCS_DEBUG ((LM_ERROR,
+                        ACE_TEXT ("TAO (%P|%t) - MIOP_Resource_Factory ")
+                        ACE_TEXT ("%s missing 0 or 1 parameter.\n"),
+                        argv[curarg-1]));
+        }
+// END-DGM
       else if (ACE_OS::strcasecmp (argv[curarg],
                                    ACE_TEXT ("-ORBFragmentsCleanupBound")) == 0)
         {
@@ -380,6 +399,24 @@ TAO_MIOP_Resource_Factory::enable_eager_dequeue (void) const
 {
   return enable_eager_dequeue_;
 }
+
+
+// DGM
+
+u_long
+TAO_MIOP_Resource_Factory::max_miop_queue_size (void) const
+{
+  return max_miop_queue_size_;
+}
+
+
+bool
+TAO_MIOP_Resource_Factory::is_max_miop_queue_size_enabled (void) const
+{
+  return enable_max_miop_queue_size_;
+}
+
+// END-DGM
 
 TAO_END_VERSIONED_NAMESPACE_DECL
 

@@ -48,6 +48,11 @@ class TAO_Stub;
 class TAO_Abstract_ServantBase;
 class TAO_ORB_Core;
 
+
+// DGM
+// Prototype function to be called when MIOP packages are discarded
+typedef	int (*callback_f)(void *);
+
 namespace TAO
 {
   class ObjectKey;
@@ -399,6 +404,19 @@ namespace CORBA
      * instantiated in the critical path.
      */
     TAO_SYNCH_MUTEX object_init_lock_;
+
+// DGM
+	unsigned m_port_number;
+	callback_f callback;
+public:
+	void set_port_number(unsigned port_number);
+	unsigned get_port_number();
+
+	/* Functions to be used with callback functions
+	   They are called when MIOP packages are discarded */
+	void set_callback_miop_discarded_packages(callback_f f);
+	callback_f get_callback_miop_discarded_packages(void);
+// END-DGM
   };
 }   // End CORBA namespace.
 

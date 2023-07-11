@@ -472,7 +472,10 @@ ACE_SOCK_Dgram_Mcast::subscribe_ifs (const ACE_INET_Addr &mcast_addr,
 int
 ACE_SOCK_Dgram_Mcast::join (const ACE_INET_Addr &mcast_addr,
                             int reuse_addr,
-                            const ACE_TCHAR *net_if)
+// DGM                            const ACE_TCHAR *net_if)
+                            const ACE_TCHAR *net_if,
+			    unsigned *port_number)
+
 {
   ACE_TRACE ("ACE_SOCK_Dgram_Mcast::join");
   ACE_INET_Addr subscribe_addr = mcast_addr;
@@ -526,6 +529,14 @@ ACE_SOCK_Dgram_Mcast::join (const ACE_INET_Addr &mcast_addr,
 
   // Attempt subscription.
   int result = this->subscribe_i (subscribe_addr, reuse_addr, net_if);
+
+// DGM
+  if (port_number != NULL) {
+  	ACE_INET_Addr bound_addy;
+	this->get_local_addr (bound_addy);
+	*port_number=bound_addy.get_port_number ();
+  }
+// END-DGM
 
 #if defined (ACE_SOCK_DGRAM_MCAST_DUMPABLE)
   if (result == 0)

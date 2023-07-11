@@ -16,8 +16,10 @@ TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 
 TAO_UIPMC_Acceptor::TAO_UIPMC_Acceptor (
   bool listen_on_all_ifs,
-  const char *listener_interfaces)
-  : TAO_Acceptor (IOP::TAG_UIPMC),
+// DGM  const char *listener_interfaces)
+  const char *listener_interfaces,int initial_port,int end_port,int reuse_allowed)
+// DGM  : TAO_Acceptor (IOP::TAG_UIPMC),
+  : TAO_Acceptor_port (IOP::TAG_UIPMC),
     addrs_ (0),
     hosts_ (0),
     endpoint_count_ (0),
@@ -25,6 +27,11 @@ TAO_UIPMC_Acceptor::TAO_UIPMC_Acceptor (
     orb_core_ (0),
     listen_on_all_ (listen_on_all_ifs),
     listener_interfaces_ (listener_interfaces)
+// DGM
+    ,initial_port_(initial_port),
+    end_port_(end_port),
+    reuse_allowed_(reuse_allowed)
+// END-DGM
 {
 }
 
@@ -74,6 +81,180 @@ TAO_UIPMC_Acceptor::close (void)
 {
   return 0;
 }
+
+
+// DGM
+// The code of this method is adapted from open
+int TAO_UIPMC_Acceptor::open_port (TAO_ORB_Core *orb_core,
+                    ACE_Reactor *reactor,
+                    int major,
+                    int minor,
+                    const char *address,
+                    const char *options,
+		    unsigned *port_number,
+		    callback_f f)
+{
+int current_port=initial_port_;
+int resul=-1;
+char *pc=NULL;
+
+if (!end_port_)
+	end_port_=initial_port_;
+
+int len=strlen(address);
+if ((len>2) && (address[len-2]==':') && (address[len-1]=='0')) { 
+	// We have to look for in an interval
+    pc=(char *)&address[len-2];
+    }
+    else  {
+	// We have an specific port
+	current_port=end_port_;  // Only 1 iteration
+    }
+
+
+while ((resul==-1) && (current_port<=end_port_)) {
+
+  if (pc != NULL) {
+	  char cad[20];
+  	  sprintf(cad,"%d",current_port);
+	  strcpy(pc+1,cad);
+  }
+ 
+  this->orb_core_ = orb_core;
+
+ /* DGM if (this->hosts_ != 0)
+    {
+      // The hostname cache has already been set!
+      // This is bad mojo, i.e. an internal TAO error.
+      ORBSVCS_ERROR_RETURN ((LM_ERROR,
+                         ACE_TEXT ("TAO (%P|%t) - UIPMC_Acceptor::open, ")
+                         ACE_TEXT ("hostname already set\n")),
+                        -1);
+    }
+*/
+
+  if (address == 0)
+    return -1;
+
+  if (major >= 0 && minor >= 0)
+    this->version_.set_version (static_cast<CORBA::Octet> (major),
+                                static_cast<CORBA::Octet> (minor));
+  // Parse options
+  if (this->parse_options (options) == -1)
+    return -1;
+
+  ACE_INET_Addr addr;
+
+  const char *port_separator_loc = ACE_OS::strchr (address, ':');
+  const char *specified_hostname = 0;
+  char tmp_host[MAXHOSTNAMELEN + 1];
+
+#if defined (ACE_HAS_IPV6)
+  // Check if this is a (possibly) IPv6 supporting profile containing a
+  // numeric IPv6 address representation.
+  if ( (this->version_.major > TAO_MIN_IPV6_IIOP_MAJOR
+        ||
+          (this->version_.major == TAO_MIN_IPV6_IIOP_MAJOR
+           &&
+           this->version_.minor >= TAO_MIN_IPV6_IIOP_MINOR)
+       ) && address[0] == '[')
+    {
+      // In this case we have to find the end of the numeric address and
+      // start looking for the port separator from there.
+      const char *cp_pos = ACE_OS::strchr(address, ']');
+      if (cp_pos == 0)
+        {
+          // No valid IPv6 address specified.
+          ORBSVCS_ERROR_RETURN ((LM_ERROR,
+                             ACE_TEXT ("TAO (%P|%t) - UIPMC_Acceptor::open, ")
+                             ACE_TEXT ("Invalid IPv6 decimal address specified\n")),
+                            -1);
+        }
+      else
+        {
+          if (cp_pos[1] == ':')    // Look for a port
+            port_separator_loc = cp_pos + 1;
+          else
+            port_separator_loc = 0;
+          // Extract out just the host part of the address.
+          const size_t len = cp_pos - (address + 1);
+          ACE_OS::memcpy (tmp_host, address + 1, len);
+          tmp_host[len] = '\0';
+        }
+    }
+  else
+#endif /* ACE_HAS_IPV6 */
+    {
+      // Extract out just the host part of the address.
+      size_t len = port_separator_loc - address;
+      ACE_OS::memcpy (tmp_host, address, len);
+      tmp_host[len] = '\0';
+    }
+
+  // Both host and port have to be specified.
+  if (port_separator_loc == 0)
+    {
+      ORBSVCS_ERROR_RETURN ((LM_ERROR,
+                         ACE_TEXT ("TAO (%P|%t) - UIPMC_Acceptor::open, ")
+                         ACE_TEXT ("port is not specified\n")),
+                        -1);
+    }
+
+  if (addr.set (address) != 0)
+    return -1;
+
+  specified_hostname = tmp_host;
+
+#if defined (ACE_HAS_IPV6)
+  // Check for violation of ORBConnectIPV6Only option
+  if (this->orb_core_->orb_params ()->connect_ipv6_only () &&
+      (addr.get_type () != AF_INET6 ||
+       addr.is_ipv4_mapped_ipv6 ()))
+    {
+      ORBSVCS_ERROR_RETURN ((LM_ERROR,
+                         ACE_TEXT ("TAO (%P|%t) - UIPMC_Acceptor::open, ")
+                         ACE_TEXT ("non-IPv6 endpoints not allowed when ")
+                         ACE_TEXT ("connect_ipv6_only is set\n")),
+                        -1);
+    }
+#endif /* ACE_HAS_IPV6 */
+
+  this->endpoint_count_ = 1;  // Only one hostname to store
+
+  ACE_NEW_RETURN (this->addrs_,
+                  ACE_INET_Addr[this->endpoint_count_],
+                  -1);
+
+  ACE_NEW_RETURN (this->hosts_,
+                  char *[this->endpoint_count_],
+                  -1);
+
+  this->hosts_[0] = 0;
+
+  if (this->hostname (orb_core,
+                      addr,
+                      this->hosts_[0],
+                      specified_hostname) != 0)
+    return -1;
+
+  // Copy the addr.  The port is (re)set in
+  // TAO_UIPMC_Acceptor::open_i().
+  if (this->addrs_[0].set (addr) != 0)
+    return -1;
+
+// DGM  return this->open_i (addr,
+  resul = this->open_i (addr,
+// DGM                       reactor);
+                       reactor,port_number,reuse_allowed_,f);
+
+  if (resul==-1)
+	current_port++;
+  }
+
+  return resul;
+}
+// END-DGM
+
 
 int
 TAO_UIPMC_Acceptor::open (
@@ -226,7 +407,12 @@ TAO_UIPMC_Acceptor::open_default (
 int
 TAO_UIPMC_Acceptor::open_i (
   const ACE_INET_Addr &addr,
-  ACE_Reactor *reactor)
+// DGM  ACE_Reactor *reactor)
+  ACE_Reactor *reactor,
+  unsigned *port_number,
+  int reuse_allowed,
+  callback_f f)
+// END-DGM
 {
   // Check for the special "CopyPreferredInterfaces" token(s) stored in the
   // listener_interfaces_ string. If found, subsitute each one for the actual
@@ -287,7 +473,11 @@ TAO_UIPMC_Acceptor::open_i (
   connection_handler->listen_on_all (this->listen_on_all_);
   connection_handler->listener_interfaces (
     this->listener_interfaces_.c_str ());
-  if (connection_handler->open (0))
+
+// DGM
+  connection_handler->set_callback_miop_discarded_packages(f);
+// DGM  if (connection_handler->open (0))
+  if (connection_handler->open (0,port_number,reuse_allowed))
     {
       ORBSVCS_DEBUG ((LM_ERROR,
                   ACE_TEXT("TAO (%P|%t) - TAO_UIPMC_Acceptor::open_i, ")

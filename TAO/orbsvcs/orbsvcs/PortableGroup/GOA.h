@@ -47,6 +47,8 @@ class TAO_PortableGroup_Export TAO_GOA :
     public virtual PortableGroup::GOA,
     public virtual TAO_Regular_POA
 {
+// DGM
+	callback_f callback;	// Callback function to be invoked when MIOP packages are discarded
 public:
   // Methods added by the
   /// @name MIOP specification methods

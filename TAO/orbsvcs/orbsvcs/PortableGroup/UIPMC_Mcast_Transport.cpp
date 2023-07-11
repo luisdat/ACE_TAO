@@ -304,6 +304,12 @@ TAO_UIPMC_Mcast_Transport::recv_all (TAO_Resume_Handle &rh)
       ACE_TEXT ("MIOP_Resource_Factory"));
   const bool eager_dequeue= factory->enable_eager_dequeue ();
 
+// DGM
+  bool is_max_miop_queue_size_enabled = factory->is_max_miop_queue_size_enabled();
+  u_long max_miop_queue_size = factory->max_miop_queue_size();
+  callback_f callback_function = connection_handler_->get_callback_miop_discarded_packages();
+// END-DGM
+
   // Only one thread will do recv at the same time.
   // FUZZ: disable check_for_ACE_Guard
   ACE_Guard<TAO_SYNCH_MUTEX> recv_guard (this->recv_lock_, 0); // tryacquire
@@ -436,7 +442,21 @@ TAO_UIPMC_Mcast_Transport::recv_all (TAO_Resume_Handle &rh)
                 }
 
               // Add it to the complete queue.
-              this->complete_.enqueue_tail (packet);
+              // DGM this->complete_.enqueue_tail (packet);
+	      if (!is_max_miop_queue_size_enabled)
+		this->complete_.enqueue_tail (packet);
+	      else {
+		// We have a max size for the miop queue
+		if (this->complete_.size()<max_miop_queue_size) {
+	              this->complete_.enqueue_tail (packet);
+		}
+		else {
+		      delete packet;	// We discard this package!!!
+		      if (callback_function != NULL)
+			callback_function(NULL);	// We invoke the callback function
+		}
+	      }
+	      // END-DGM
 
               // Stop attempting to queue more messages if we are not in eager mode.
               if (!eager_dequeue)

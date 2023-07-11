@@ -28,9 +28,30 @@
 #include "tao/Transport_Acceptor.h"
 #include "tao/Resource_Factory.h"
 
+// DGM
+#include "tao/Object.h"
+
 TAO_BEGIN_VERSIONED_NAMESPACE_DECL
 
 class TAO_Profile;
+
+// DGM
+// Base class for getting port number
+// UIPMC_Acceptor inherits from this class
+class TAO_Acceptor_port:public TAO_Acceptor {
+public:
+  TAO_Acceptor_port (CORBA::ULong tag);
+
+  virtual int open_port (TAO_ORB_Core *orb_core,
+                    ACE_Reactor *reactor,
+                    int version_major,
+                    int version_minor,
+                    const char *address,
+                    const char *options = 0,
+		    unsigned *port=NULL,
+		    callback_f f=NULL)=0;
+};
+// END-DGM
 
 namespace CORBA
 {
@@ -61,8 +82,14 @@ public:
 
     /// Count of times that this GroupId has been opened.
     int cnt;
+
+    // DGM
+    // UDP port assigned to this entry
+    unsigned port_number;
   };
 
+
+  // = Initialization and termination methods.
   ///  Default constructor.
   TAO_PortableGroup_Acceptor_Registry (void);
 
@@ -70,7 +97,8 @@ public:
   ~TAO_PortableGroup_Acceptor_Registry (void);
 
   /// Open an acceptor based on a tagged profile.
-  void open (const TAO_Profile* profile, TAO_ORB_Core &orb_core);
+// DGM  void open (const TAO_Profile* profile, TAO_ORB_Core &orb_core);
+  unsigned open (const TAO_Profile* profile, TAO_ORB_Core &orb_core,callback_f f);
 
   /// Close all open acceptors.
   int close_all (void);
@@ -81,9 +109,12 @@ public:
 protected:
 
   /// Helper function to open a group acceptor.
-  void open_i (const TAO_Profile* profile,
+// DGM  void open_i (const TAO_Profile* profile,
+// Returns UDP port assigned
+  unsigned open_i (const TAO_Profile* profile,
                TAO_ORB_Core &orb_core,
-               TAO_ProtocolFactorySetItor &factory);
+               TAO_ProtocolFactorySetItor &factory,callback_f f);
+// END-DGM
 
   /// Find an acceptor by using a profile.
   int find (const TAO_Profile* profile,
