@@ -47,6 +47,15 @@ struct unbounded_array_allocation_traits
   {
     delete[] buffer;
   }
+
+	// DGM
+	// Copied from freebuf
+  inline static void freebuf2(value_type * buffer,CORBA::ULong)
+  {
+    delete[] buffer;
+  }
+	// END-DGM
+
 };
 
 } // namespace details

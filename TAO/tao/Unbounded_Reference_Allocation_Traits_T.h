@@ -76,6 +76,21 @@ struct unbounded_reference_allocation_traits
     }
     delete[] buffer;
   }
+
+// DGM
+  inline static void freebuf2(value_type * buffer,CORBA::ULong)
+  {
+    if(buffer != 0)
+    {
+      value_type * begin = buffer - 1;
+      value_type * end = reinterpret_cast<value_type*>(*begin);
+      reference_traits::release_range(buffer, end);
+
+      buffer = begin;
+    }
+    delete[] buffer;
+  }
+
 };
 
 } // namespace details

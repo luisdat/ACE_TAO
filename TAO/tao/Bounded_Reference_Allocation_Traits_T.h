@@ -43,7 +43,23 @@ struct bounded_reference_allocation_traits
     return buffer;
   }
 
-  inline static value_type * allocbuf_noinit(CORBA::ULong /* maximum */)
+
+  inline static value_type * allocbuf_noinit(CORBA::ULong maximum)
+  {
+    value_type * buffer = new value_type[MAX];
+
+    // no throw
+// DGM    reference_traits::zero_range(buffer, buffer + MAX);
+    reference_traits::zero_range(buffer, buffer + maximum);
+
+    return buffer;
+  }
+
+
+
+
+/*
+  inline static value_type * allocbuf_noinit(CORBA::ULong ** maximum **)
   {
     value_type * buffer = new value_type[MAX];
     // no throw
@@ -51,10 +67,19 @@ struct bounded_reference_allocation_traits
 
     return buffer;
   }
+*/
 
   inline static void freebuf(value_type * buffer)
   {
     reference_traits::release_range(buffer, buffer + MAX);
+    delete[] buffer;
+  }
+
+
+// DGM
+  inline static void freebuf2(value_type * buffer,CORBA::ULong length)
+  {
+    reference_traits::release_range(buffer, buffer + length);
     delete[] buffer;
   }
 

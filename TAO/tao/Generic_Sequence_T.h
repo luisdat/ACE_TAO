@@ -147,11 +147,21 @@ public:
       length_ = rhs.length_;
       return;
     }
+
+/* DGM
     generic_sequence tmp(rhs.maximum_, rhs.length_,
                          allocation_traits::allocbuf_noinit(rhs.maximum_),
                          true);
-    element_traits::initialize_range(
-        tmp.buffer_ + tmp.length_, tmp.buffer_ + tmp.maximum_);
+*/
+
+
+// DGM
+    generic_sequence tmp(rhs.maximum_, rhs.length_,
+                         allocation_traits::allocbuf_noinit(rhs.length_),
+                         true);
+
+/*   DGM  element_traits::initialize_range(
+        tmp.buffer_ + tmp.length_, tmp.buffer_ + tmp.maximum_);*/
     element_traits::copy_range(
         rhs.buffer_,
         rhs.buffer_ + rhs.length_,
@@ -172,7 +182,8 @@ public:
   {
     if (release_)
     {
-      freebuf(buffer_);
+ // DGM     freebuf(buffer_);
+	freebuf2(buffer_,length_);
     }
   }
 
@@ -360,6 +371,13 @@ public:
   {
     allocation_traits::freebuf(buffer);
   }
+
+// DGM
+  static void freebuf2(value_type * buffer,CORBA::ULong length)
+  {
+    allocation_traits::freebuf2(buffer,length);
+  }
+
 
 #if defined TAO_HAS_SEQUENCE_ITERATORS && TAO_HAS_SEQUENCE_ITERATORS == 1
 
