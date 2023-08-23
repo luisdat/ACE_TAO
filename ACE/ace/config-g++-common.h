@@ -32,10 +32,10 @@
 #endif /* __GNUC__ >= 3.3 */
 
 #if __cplusplus >= 201103L
-# define ACE_HAS_CPP11
+// # define ACE_HAS_CPP11
 #endif
 #if __cplusplus >= 201402L
-# define ACE_HAS_CPP14
+// # define ACE_HAS_CPP14
 #endif
 #if __cplusplus >= 201703L
 # define ACE_HAS_CPP17
